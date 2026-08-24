@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Parisienne&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --his-name: "Rahul Kyada";
+    --your-name: "Pankti";
+  }
+
+  :root{
+    --cream:   #FBF3EC;
+    --blush:   #F1D9D3;
+    --rose:    #C98A93;
+    --burgundy:#6E2C3B;
+    --gold:    #B4893F;
+    --ink:     #3B2E2E;
+    --ink-soft:#6B5757;
+  }
+
+  *{ box-sizing:border-box; }
+  html, body{ height:100%; margin:0; }
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'EB Garamond', serif;
+    overflow:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
+  }
+
+  .script{ font-family:'Parisienne', cursive; }
+
+  .petal-field{ position:fixed; inset:0; pointer-events:none; z-index:1; overflow:hidden; }
+  .petal{
+    position:absolute; top:-5%; width:12px; height:12px;
+    background:var(--rose); opacity:0.3; border-radius:0 60% 0 60%;
+    animation:drift linear infinite;
+  }
+  @keyframes drift{
+    0%{ transform:translateY(-10vh) translateX(0) rotate(0deg); }
+    100%{ transform:translateY(110vh) translateX(30px) rotate(280deg); }
+  }
+
+  .screen{
+    position:fixed; inset:0;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:6vh 8vw;
+    z-index:2;
+    overflow-y:auto;
+  }
+  .screen.active{ display:flex; }
+
+  #screen-home .cake{ font-size:2.6rem; margin-bottom:1rem; }
+  #screen-home h1{
+    font-family:'Parisienne', cursive;
+    font-size:clamp(2.4rem, 7vw, 4rem);
+    color:var(--burgundy);
+    margin:0 0 1rem 0;
+    line-height:1.15;
+  }
+  #screen-home p{
+    font-style:italic;
+    color:var(--ink-soft);
+    font-size:1.1rem;
+  }
+
+  #screen-wish .label{
+    letter-spacing:0.3em;
+    text-transform:uppercase;
+    font-size:0.72rem;
+    color:var(--gold);
+    margin-bottom:1.4rem;
+  }
+  .note-box{
+    max-width:640px;
+    max-height:38vh;
+    overflow-y:auto;
+    font-size:1.08rem;
+    line-height:1.75;
+    color:var(--ink-soft);
+    white-space:pre-line;
+    padding:0 0.5rem;
+  }
+  .photo-row{
+    display:flex;
+    gap:16px;
+    margin-top:1.6rem;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .photo-frame{
+    width:260px; aspect-ratio:4/3;
+    border-radius:10px; overflow:hidden; position:relative;
+    background:var(--blush);
+    box-shadow:0 12px 26px rgba(110,44,59,0.18);
+    transform:rotate(-1deg);
+  }
+  .photo-frame:nth-child(2){ transform:rotate(1deg); }
+  .photo-frame img{ width:100%; height:100%; object-fit:cover; object-position:center 20%; display:block; }
+  .photo-frame.missing img{ display:none; }
+  .photo-frame.missing::after{
+    content: attr(data-label);
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:0.8rem;
+    font-size:0.72rem; font-style:italic; color:var(--ink-soft);
+    border:1px dashed var(--rose); border-radius:10px;
+  }
+
+  #screen-proposal h2{
+    font-family:'Parisienne', cursive;
+    font-size:clamp(2rem, 6vw, 3.2rem);
+    color:var(--burgundy);
+    margin:0 0 1.2rem 0;
+  }
+  #screen-proposal .sub{
+    color:var(--ink-soft);
+    font-size:1.05rem;
+    max-width:520px;
+    margin-bottom:2.2rem;
+  }
+  .btn-row{ display:flex; gap:16px; }
+  .yes-btn, .no-btn{
+    font-family:'EB Garamond', serif;
+    font-size:1.05rem;
+    padding:0.85rem 2.2rem;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .yes-btn{
+    border:1px solid var(--burgundy);
+    background:var(--burgundy);
+    color:var(--cream);
+  }
+  .no-btn{
+    border:1px solid var(--rose);
+    background:transparent;
+    color:var(--ink-soft);
+  }
+  .yes-btn:hover, .no-btn:hover{ transform:translateY(-2px); }
+  .yes-btn:disabled, .no-btn:disabled{ opacity:0.5; cursor:default; transform:none; }
+
+  .answer{
+    margin-top:2rem;
+    font-family:'Parisienne', cursive;
+    font-size:1.8rem;
+    color:var(--gold);
+    opacity:0;
+    transition:opacity 0.6s ease;
+  }
+  .answer.show{ opacity:1; }
+
+  .next-btn{
+    margin-top:3rem;
+    font-family:'EB Garamond', serif;
+    font-size:1rem;
+    padding:0.8rem 2.4rem;
+    border-radius:999px;
+    border:1px solid var(--burgundy);
+    background:var(--burgundy);
+    color:var(--cream);
+    cursor:pointer;
+    transition:transform 0.2s ease;
+  }
+  .next-btn:hover{ transform:translateY(-2px); }
+</style>
+</head>
+<body>
+
+<div class="petal-field" id="petalField"></div>
+
+<section class="screen active" id="screen-home">
+  <div class="cake">🎂</div>
+  <h1 id="homeTitle">Happy Birthday, Rahul Kyada</h1>
+  <p id="homeSubtitle">Hey! I made you a little something...</p>
+  <button class="next-btn" onclick="goTo('screen-wish')">Open →</button>
+</section>
+
+<section class="screen" id="screen-wish">
+  <div class="label">A little note for you</div>
+  <div class="note-box" id="wishNote">Hey Rahul,
+
+You are the most precious gift in my life. After my papa, you are my whole world. You are the only person who truly knows me and understands me, whether I'm sad or going through my mood swings during my periods.
+
+You are the happiness of my life. Without you, I feel incomplete. Even on our busiest days, a single call or message from you brings a smile to my face.
+
+We do fight sometimes, but after every fight, you always choose us and never give up on me. I promise that I will never disappoint you. You have never made me feel like a burden or that I need to adjust for your happiness. Instead, you always make me feel loved and valued.
+
+I am trying every day to become your dream girl and the best partner I can be. I promise that I will never let go of your hand for the rest of my life.
+
+I love you today, tomorrow, and forever. ❤️</div>
+
+  <div class="photo-row">
+    <div class="photo-frame" data-label="Add photo: replace src with photos/us1.jpg">
+    <img src="photos/us1.jpeg" alt="A photo of us" onerror="this.parentElement.classList.add('missing')">
+    </div>
+    <div class="photo-frame" data-label="Add photo: replace src with photos/us2.jpg">
+      <img src="photos/us2.jpeg" alt="A photo of us" onerror="this.parentElement.classList.add('missing')">
+    </div>
+  </div>
+
+  <button class="next-btn" onclick="goTo('screen-proposal')">Next →</button>
+</section>
+
+<section class="screen" id="screen-proposal">
+  <h2 id="proposalLine">Rahul, will you marry me?</h2>
+  <p class="sub" id="proposalSub">Every day with you has been the best part of my life. I want all the rest of them with you too. Please give me your answer — yes or no.</p>
+
+  <div class="btn-row">
+    <button class="yes-btn" id="yesBtn" onclick="answer(true)">Yes, always</button>
+    <button class="no-btn" id="noBtn" onclick="answer(false)">No, never</button>
+  </div>
+
+  <div class="answer" id="answerText"></div>
+</section>
+
+<script>
+  const NOTIFY_TOPIC = "change-me-to-your-own-secret-topic-name";
+
+  function pingMyPhone(message){
+    if(!NOTIFY_TOPIC || NOTIFY_TOPIC === "pankti-rahul-9x7k2") return;
+    fetch(`https://ntfy.sh/${NOTIFY_TOPIC}`, {
+      method: "POST",
+      body: message,
+      headers: { "Title": "He answered!" }
+    }).catch(()=>{});
+  }
+
+  const field = document.getElementById('petalField');
+  for(let i=0;i<14;i++){
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (14 + Math.random()*10) + 's';
+    p.style.animationDelay = (Math.random()*14) + 's';
+    p.style.width = p.style.height = (7 + Math.random()*9) + 'px';
+    field.appendChild(p);
+  }
+
+  function goTo(id){
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  function answer(isYes){
+    document.getElementById('yesBtn').disabled = true;
+    document.getElementById('noBtn').disabled = true;
+    const ans = document.getElementById('answerText');
+    if(isYes){
+      ans.textContent = "He said YES! 💍🎉";
+      ans.style.color = "var(--gold)";
+      pingMyPhone("He said YES! 🎉💍");
+      confetti();
+    } else {
+      ans.textContent = "He said no.";
+      ans.style.color = "var(--ink-soft)";
+      pingMyPhone("He said no.");
+    }
+    ans.classList.add('show');
+  }
+
+  function confetti(){
+    const colors = ['#C98A93','#B4893F','#6E2C3B','#F1D9D3'];
+    for(let i=0;i<40;i++){
+      const el = document.createElement('div');
+      el.style.position = 'fixed';
+      el.style.top = '-10px';
+      el.style.left = Math.random()*100 + 'vw';
+      el.style.width = el.style.height = (5 + Math.random()*6) + 'px';
+      el.style.background = colors[Math.floor(Math.random()*colors.length)];
+      el.style.zIndex = 5;
+      el.style.borderRadius = '2px';
+      el.style.transition = 'transform 3s linear, opacity 3s linear';
+      document.body.appendChild(el);
+      requestAnimationFrame(()=>{
+        el.style.transform = `translate(${(Math.random()*80-40)}px, 100vh) rotate(${Math.random()*360}deg)`;
+        el.style.opacity = '0.2';
+      });
+      setTimeout(()=> el.remove(), 3200);
+    }
+  }
+</script>
+
+</body>
+</html>
